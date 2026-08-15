@@ -6,3 +6,4 @@ pydantic
 pydantic-settings
 psycopg[binary]
 httpx
+psycopg2-binary
