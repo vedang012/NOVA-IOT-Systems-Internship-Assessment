@@ -58,6 +58,6 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /root/NOVA-IOT-Systems-Internship-Assessment
+            cd /home/ubuntu/NOVA-IOT-Systems-Internship-Assessment
             git pull origin Main
             docker compose -f docker/docker-compose.yml up -d --build
