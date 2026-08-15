@@ -137,6 +137,8 @@ The public API is available at:
 Endpoints can be tested using:
 **https://nova-iot-assessment-api.vedang.tech/docs**
 
+TEST API KEY for authentication: NOVA_IOT_API_7fK9mQ2xL8vR4pZ6tY3nW5cH1sD9aB
+
 
 The deployment uses a single EC2 instance because the current workload is small and the assessment prioritizes a simple, low-cost architecture.
 
