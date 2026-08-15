@@ -134,6 +134,10 @@ The public API is available at:
 
 **https://nova-iot-assessment-api.vedang.tech**
 
+Endpoints can be tested using:
+**https://nova-iot-assessment-api.vedang.tech/docs**
+
+
 The deployment uses a single EC2 instance because the current workload is small and the assessment prioritizes a simple, low-cost architecture.
 
 ---
