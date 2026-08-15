@@ -3,8 +3,13 @@ from sqlalchemy.orm import Session
 from typing import List
 from .. import models, schemas
 from ..database import get_db
+from ..security import get_api_key
 
-router = APIRouter(prefix="/api/readings", tags=["readings"])
+router = APIRouter(
+    prefix="/api/readings", 
+    tags=["readings"],
+    dependencies=[Depends(get_api_key)]
+)
 
 @router.post("", response_model=schemas.Reading, status_code=status.HTTP_201_CREATED)
 def create_reading(reading: schemas.ReadingCreate, db: Session = Depends(get_db)):

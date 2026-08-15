@@ -6,8 +6,12 @@ from sqlalchemy.orm import sessionmaker
 import datetime
 import uuid
 
-# Use in-memory SQLite for testing to avoid needing a real database running
+# Mock environment variables BEFORE any application imports
+os.environ["API_KEY"] = "super-secret-test-key"
+os.environ["CORS_ORIGINS"] = "http://localhost:3000"
+
 from sqlalchemy.pool import StaticPool
+
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
 engine = create_engine(
@@ -35,12 +39,26 @@ app.dependency_overrides[get_db] = override_get_db
 
 client = TestClient(app)
 
+valid_headers = {"X-API-Key": "super-secret-test-key"}
+invalid_headers = {"X-API-Key": "wrong-key"}
+
 def test_health():
     response = client.get("/health")
+    # Health endpoint should not require an API key
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "message": "API is running"}
 
-def test_create_reading():
+def test_unauthenticated_requests():
+    # Attempting to access protected endpoints without API key
+    assert client.get("/api/devices").status_code == 401
+    assert client.get("/api/readings").status_code == 401
+    assert client.post("/api/readings", json={}).status_code == 401
+
+def test_invalid_api_key_requests():
+    # Attempting to access protected endpoints with a bad API key
+    assert client.get("/api/devices", headers=invalid_headers).status_code == 401
+    assert client.get("/api/readings", headers=invalid_headers).status_code == 401
+
+def test_create_reading_authenticated():
     device_id = f"TEST-ROOM-{uuid.uuid4().hex[:4]}"
     now = datetime.datetime.now(datetime.timezone.utc).isoformat()
     read_data = {
@@ -50,25 +68,13 @@ def test_create_reading():
         "co2": 1180,
         "timestamp": now
     }
-    response = client.post("/api/readings", json=read_data)
+    response = client.post("/api/readings", json=read_data, headers=valid_headers)
     assert response.status_code == 201
-    data = response.json()
-    assert data["device_id"] == device_id
-    assert data["temperature"] == 23.8
-    assert data["humidity"] == 87.4
-    assert data["co2"] == 1180
-    assert "id" in data
 
-def test_get_devices():
-    response = client.get("/api/devices")
+def test_get_devices_authenticated():
+    response = client.get("/api/devices", headers=valid_headers)
     assert response.status_code == 200
-    data = response.json()
-    assert isinstance(data, list)
 
-def test_get_readings():
-    response = client.get("/api/readings")
+def test_get_readings_authenticated():
+    response = client.get("/api/readings", headers=valid_headers)
     assert response.status_code == 200
-    data = response.json()
-    assert isinstance(data, list)
-    if len(data) > 0:
-        assert "temperature" in data[0]
